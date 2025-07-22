@@ -20,12 +20,20 @@ shopIcon.addEventListener("click", () => {
 
 window.addEventListener("DOMContentLoaded", async () => {
     try {
-        const response = await fetch("./products.json")
-        if (!response.ok) throw new Error("Dosya bulunamadı.")
+        const savedProducts = localStorage.getItem("allProducts")
+        if (savedProducts) {
+            allProducts = JSON.parse(savedProducts)
+            renderProducts(allProducts)
+        } else {
+            const response = await fetch("./products.json")
+            if (!response.ok) throw new Error("Dosya bulunamadı.")
 
-        const responseData = await response.json()
-        allProducts = [...responseData.products]
-        renderProducts(allProducts)
+            const responseData = await response.json()
+            allProducts = [...responseData.products]
+            renderProducts(allProducts)
+        }
+
+        loadCartFromLocalStorage()
     } catch (error) {
         console.log("Veri yükleme hatası", error)
     }
@@ -127,6 +135,7 @@ function addToCart(product) {
     }
     updateCartUI()
     updateCartCount()
+    saveCartToLocalStorage()
 }
 
 function updateCartUI() {
@@ -193,6 +202,7 @@ function setupCartButtons() {
 
             item.quantity += 1
             updateCartUI()
+            saveCartToLocalStorage()
         })
     })
 
@@ -205,6 +215,7 @@ function setupCartButtons() {
             if (item.quantity > 1) {
                 item.quantity -= 1
                 updateCartUI()
+                saveCartToLocalStorage()
             } else {
                 removeFromCart(productId)
             }
@@ -226,6 +237,7 @@ function removeFromCart(productId) {
     cartItems = cartItems.filter((item) => item.id !== productId)
     updateCartUI()
     updateCartCount()
+    saveCartToLocalStorage()
 }
 
 function updateTotalAmount() {
@@ -269,12 +281,15 @@ function checkout() {
     })
     receipt += `\nTOPLAM: ${calculateTotal()} TL`
 
-    console.log(receipt)
     updateStock()
     //sepeti temizle ve UI güncelle
     cartItems = [] // sepeti boşalt
+    localStorage.removeItem("cartItems")
+
     updateCartUI() // sepet görünümünü güncelle
     updateCartCount() // sepet sayacını düzenle
+
+    alert("Ödemeniz başarıyla tamamlandı! /n/n" + receipt)
 }
 
 function updateStock() {
@@ -284,5 +299,19 @@ function updateStock() {
             product.stock -= item.quantity //stoktan düşür
         }
     })
-    renderProducts(allProducts) // ürün listesini yenile (stoklar güncellensin)
+    localStorage.setItem("allProducts", JSON.stringify(allProducts))
+    renderProducts(allProducts)
+}
+
+function loadCartFromLocalStorage() {
+    const savedCart = localStorage.getItem("cartItems")
+    if (savedCart) {
+        cartItems = JSON.parse(savedCart)
+        updateCartUI()
+        updateCartCount()
+    }
+}
+
+function saveCartToLocalStorage() {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems))
 }
