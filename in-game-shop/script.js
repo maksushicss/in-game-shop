@@ -273,7 +273,7 @@ function checkout() {
         console.log("Sepetiniz boş!")
     }
 
-    let receipt = `SATIN ALIM ÖZETİ:\n\n`
+    let receipt = `\nSATIN ALIM ÖZETİ:\n`
     cartItems.forEach((item) => {
         receipt += `${item.title} - ${item.quantity} x ${item.price} TL = ${
             item.quantity * item.price
@@ -289,7 +289,7 @@ function checkout() {
     updateCartUI() // sepet görünümünü güncelle
     updateCartCount() // sepet sayacını düzenle
 
-    alert("Ödemeniz başarıyla tamamlandı! /n/n" + receipt)
+    alert("Ödemeniz başarıyla tamamlandı!" + receipt)
 }
 
 function updateStock() {
